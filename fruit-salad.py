@@ -40,6 +40,42 @@ class FruitSalad:
         return self.data
 
 
+    def transform_data(self):
+        """ Makes a sub-dictionary from original data and adds it to a list."""
+
+        data = self.get_data()
+        result = []
+
+        for d in data:
+            sub = {}
+
+            sub.update({ \
+                'full_name': str(d['name']['first'] + " " + d['name']['last']), \
+                'age': d['age'], \
+                'is_active': d['isActive'], \
+                'favorite_fruit': str(d['favoriteFruit']), \
+                'balance': float(d['balance'].strip('$').replace(',', ''))
+            })
+            result.append(sub)
+
+        return result
+
+
+
+
+
 fruit = FruitSalad()
-pprint(fruit.get_data())
+pprint(fruit.transform_data())
+
+# current data set:
+ # {'age': 20,
+ #  'balance': u'$3,317.36',
+ #  'favoriteFruit': u'strawberry',
+ #  'isActive': True,
+ #  'name': {u'first': u'Fox', u'last': u'Cummings'}},
+ # {'age': 38,
+ #  'balance': u'$1,939.57',
+ #  'favoriteFruit': u'banana',
+ #  'isActive': False,
+ #  'name': {u'first': u'Marilyn', u'last': u'Sweeney'}},
 
