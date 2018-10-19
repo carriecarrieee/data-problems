@@ -2,6 +2,8 @@
 
 
 import jsonlines
+import re
+from collections import Counter
 from pprint import pprint
 
 
@@ -20,7 +22,7 @@ class FruitSalad:
 
         # url = "https://s3-us-west-1.amazonaws.com/circleup-engr-interview-public/simple-etl.jsonl"
         url = "data/simple-etl.jsonl"
-        fields = ['name', 'age', 'isActive', 'favoriteFruit','balance']
+        fields = ['name', 'age', 'isActive', 'favoriteFruit', 'balance', 'posts']
 
         if not self.data:
 
@@ -51,6 +53,8 @@ class FruitSalad:
 
             sub.update({ \
                 'full_name': str(d['name']['first'] + " " + d['name']['last']), \
+                'post_count': len(d['posts']), \
+                'most_common_word_in_posts': self.find_most_common_word(d['posts']), \
                 'age': d['age'], \
                 'is_active': d['isActive'], \
                 'favorite_fruit': str(d['favoriteFruit']), \
@@ -61,11 +65,37 @@ class FruitSalad:
         return result
 
 
+    def find_most_common_word(self, lst):
+        """ Takes in list of posts and returns the most common word(s) in a list."""
+        
+        word_lst = []
+        freq = {}
+        highest_freq = 0
 
+        # Loop thru all posts regardless of punctuation and puts them in lowercase
+        for text in lst:
+            post = re.findall(r'\w+', text['post'].lower())
+ x
+        # Create dictionary freq with word: count
+        for word in post:
+            if word not in freq:
+                freq[word] = 1
+            else:
+                freq[word] += 1
+
+        for count in freq.values():
+            if count > highest_freq:
+                highest_freq = count
+
+        for word in freq.keys():
+            if freq[word] == highest_freq:
+                word_lst.append(str(word))
+
+        return word_lst
 
 
 fruit = FruitSalad()
-pprint(fruit.transform_data())
+print(fruit.transform_data())
 
 # current data set:
  # {'age': 20,
