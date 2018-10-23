@@ -4,6 +4,7 @@
 import jsonlines
 import re
 import statistics
+from collections import Counter
 from pprint import pprint
 
 
@@ -98,36 +99,22 @@ class FruitSalad:
             
             Test:
             >>> fruit = FruitSalad()
-            >>> fruit.find_most_common_word( \
+            >>> fruit.get_most_common_word( \
                     [ 'me', 'me', 'me', 'i', 'will', 'succeed', 'succeed'])
             ['me']
         """
         
-        word_lst = []
-        freq = {}
-        highest_freq = 0
+        # Create dictionary-like Counter of {word: frequency}
+        counter = Counter(lst)
 
-        # Create dictionary freq with word: count
-        for word in lst:
-            if word not in freq:
-                freq[word] = 1
-            else:
-                freq[word] += 1
+        # Find highest frequency out of all the frequencies.
+        max_count = max(counter.values())
 
-        # Iterate through the dict and find the highest frequency.
-        # Find the word where the value matches the highest frequency and
-        # append to word_lst.
-        for word, count in freq.items():
-            if count > highest_freq:
-                word_lst = [] # Make sure list is completely empty.
-                word_lst.append(str(word))
-                highest_freq = count
+        # Store the most common word in a list where the value (freq) matches
+        # the max_count.
+        mode = [k for k, v in counter.items() if v == max_count]
 
-            # If count is the same, add the word to existing word_lst
-            elif count == highest_freq:
-                word_lst.append(str(word))
-
-        return word_lst
+        return mode
 
 
     def get_total_posts(self):
@@ -150,7 +137,17 @@ class FruitSalad:
 
 
     def get_mc_overall_word(self):
-        """ Returns most common of the most common words in the dataset."""
+        """ Returns most common of the most common words in the dataset.
+
+            Test:
+
+            >>> fruit = FruitSalad()
+            >>> type(fruit.get_mc_overall_word())
+            <class 'list'>
+
+            >>> type(fruit.get_mc_overall_word()[0])
+            <class 'str'>
+        """
 
         data = self.transform_data()
         words = []
@@ -160,10 +157,18 @@ class FruitSalad:
 
         flatten = [leaf for tree in words for leaf in tree]
 
-        return self.find_most_common_word(flatten)
+        return self.get_most_common_word(flatten)
 
 
     def get_total_bal(self):
+        """ Returns sum of all account balances for all users.
+            
+            Test:
+
+            >>> fruit = FruitSalad()
+            >>> type(fruit.get_total_bal())
+            <class 'float'>
+        """
 
         data = self.transform_data()
         total = 0
@@ -177,6 +182,14 @@ class FruitSalad:
 
 
     def get_mean_bal(self):
+        """ Returns avg account balance for all users.
+            
+            Test:
+
+            >>> fruit = FruitSalad()
+            >>> type(fruit.get_mean_bal())
+            <class 'float'>
+        """
 
         data = self.transform_data()
 
@@ -189,6 +202,14 @@ class FruitSalad:
 
 
     def get_active_mean(self):
+        """ Returns avg account balance for all active users.
+
+            Test:
+
+            >>> fruit = FruitSalad()
+            >>> type(fruit.get_active_mean())
+            <class 'float'>
+        """
 
         data = self.transform_data()
 
@@ -202,6 +223,14 @@ class FruitSalad:
 
 
     def get_strawberry_mean(self):
+        """ Returns avg account balance for users who favor strawberries.
+
+            Test:
+
+            >>> fruit = FruitSalad()
+            >>> type(fruit.get_strawberry_mean())
+            <class 'float'>
+        """
 
         data = self.transform_data()
 
@@ -214,7 +243,25 @@ class FruitSalad:
         return float(format(statistics.mean(strawberry), '.2f'))
 
 
-    def get_min_age(self):
+    def get_age_stats(self):
+        """ Returns the min, max, mean, and median age of all users in a list.
+        
+            Test:
+
+            >>> fruit = FruitSalad()
+            >>> type(fruit.get_age_stats()[0])
+            <class 'int'>
+
+            >>> type(fruit.get_age_stats()[1])
+            <class 'int'>
+
+            >>> type(fruit.get_age_stats()[2])
+            <class 'float'>
+
+            >>> type(fruit.get_age_stats()[3])
+            <class 'float'>
+
+        """
 
         data = self.transform_data()
 
@@ -223,25 +270,166 @@ class FruitSalad:
         for user in data:
             age.append(user['age'])
 
-        return min(age)
+        return [min(age), max(age), statistics.mean(age), statistics.median(age)]
 
 
+    def get_apple_lovers_age(self):
+        """ Returns age with the most users who favor apples.
+            
+            Test:
 
-# transform data:
-#  {'age': 20,
-#   'balance': 3317.36,
-#   'favorite_fruit': 'strawberry',
-#   'full_name': 'Fox Cummings',
-#   'is_active': True,
-#   'most_common_word_in_posts': ['in', 'minim'],
-#   'post_count': 10},
-#  {'age': 38,
-#   'balance': 1939.57,
-#   'favorite_fruit': 'banana',
-#   'full_name': 'Marilyn Sweeney',
-#   'is_active': False,
-#   'most_common_word_in_posts': ['elit'],
-#   'post_count': 10},
+            >>> fruit = FruitSalad()
+            >>> type(fruit.get_apple_lovers_age())
+            <class 'int'>
+        """
+
+        data = self.transform_data()
+
+        apple = []
+
+        for user in data:
+            if user['favorite_fruit'] == 'apple':
+                apple.append(user['age'])
+
+        return statistics.mode(apple)
+
+
+    def get_non_apple_age(self):
+        """ Returns min and max age of the set of users who do NOT favor apples.
+            
+            Test:
+
+            >>> fruit = FruitSalad()
+            >>> type(fruit.get_non_apple_age()[0])
+            <class 'int'>
+
+            >>> type(fruit.get_non_apple_age()[1])
+            <class 'int'>
+        """
+
+        data = self.transform_data()
+
+        non_apple = []
+
+        for user in data:
+            if user['favorite_fruit'] != 'apple':
+                non_apple.append(user['age'])
+
+        return [min(non_apple), max(non_apple)]
+
+
+    def get_mc_fruit_active(self):
+        """ Returns list of most common favorite fruit(s) for active users.
+            
+            Test:
+
+            >>> fruit = FruitSalad()
+            >>> type(fruit.get_mc_fruit_active())
+            <class 'list'>
+
+            >>> type(fruit.get_mc_fruit_active()[0])
+            <class 'str'>
+        """
+
+        data = self.transform_data()
+
+        fruit = []
+
+        for user in data:
+            if user['is_active']:
+                fruit.append(user['favorite_fruit'])
+
+        return self.get_most_common_word(fruit)
+
+
+    def get_mc_fruit_median_age(self):
+        """ Returns most common fruit(s) for users of the median age.
+
+            Test:
+
+            >>> fruit = FruitSalad()
+            >>> type(fruit.get_mc_fruit_median_age())
+            <class 'list'>
+
+            >>> type(fruit.get_mc_fruit_median_age()[0])
+            <class 'str'>
+        """
+
+        data = self.transform_data()
+
+        fruit_median_age = []
+
+        for user in data:
+            if user['age'] == self.get_age_stats()[3]:
+                fruit_median_age.append(user['favorite_fruit'])
+
+        return self.get_most_common_word(fruit_median_age)
+
+
+    def get_acct_bal_gt_mean(self):
+        """ Returns most common favorite fruit(s) for users with a balance
+            greater than the mean.
+
+            Test:
+
+            >>> fruit = FruitSalad()
+            >>> type(fruit.get_acct_bal_gt_mean())
+            <class 'list'>
+
+            >>> type(fruit.get_acct_bal_gt_mean()[0])
+            <class 'str'>
+        """
+
+        data = self.transform_data()
+
+        fruit_high_bal = []
+
+        for user in data:
+            if user['balance'] > self.get_mean_bal():
+                fruit_high_bal.append(user['favorite_fruit'])
+
+        return self.get_most_common_word(fruit_high_bal)
+
+
+    def create_summary(self):
+        """ Generates an overall summary (dict) output of stats from the dataset.
+
+            Test:
+
+            >>> fruit = FruitSalad()
+            >>> type(fruit.create_summary())
+            <class 'dict'>
+
+            >>> len(fruit.create_summary())
+            5
+        """
+
+        summary = { 
+            'total post count': self.get_total_posts(),
+            'most_common_word_overall': self.get_mc_overall_word(),
+            'account_balance': {
+                'total': self.get_total_bal(),
+                'mean': self.get_mean_bal(),
+                'active_user_mean': self.get_active_mean(),
+                'strawberry_lovers_mean': self.get_strawberry_mean(),
+                },
+            'age': {
+                'min': self.get_age_stats()[0],
+                'max': self.get_age_stats()[1],
+                'mean': self.get_age_stats()[2],
+                'median': self.get_age_stats()[3],
+                'age_with_most_apple_lovers': self.get_apple_lovers_age(),
+                'youngest_age_hating_apples': self.get_non_apple_age()[0],
+                'oldest_age_hating_apples': self.get_non_apple_age()[1],
+                },
+            'favorite_fruit': {
+                'active_users': self.get_mc_fruit_active(),
+                'median_age': self.get_mc_fruit_median_age(),
+                'acct_balance_gt_mean': self.get_acct_bal_gt_mean()
+                }
+            }
+
+        return summary
 
 
 if __name__ == "__main__":
@@ -250,14 +438,19 @@ if __name__ == "__main__":
 
     fruit = FruitSalad()
     pprint(fruit.transform_data())
-    print(fruit.get_total_posts())
-    print(fruit.get_mc_overall_word())
-    print(fruit.get_total_bal())
-    print(fruit.get_mean_bal())
-    print(fruit.get_active_mean())
-    print(fruit.get_strawberry_mean())
-    print(fruit.get_min_age())
-
+    # print(fruit.get_total_posts())
+    # print(fruit.get_mc_overall_word())
+    # print(fruit.get_total_bal())
+    # print(fruit.get_mean_bal())
+    # print(fruit.get_active_mean())
+    # print(fruit.get_strawberry_mean())
+    # print(fruit.get_age_stats())
+    # print(fruit.get_apple_lovers_age())
+    # print(fruit.get_non_apple_age())
+    # print(fruit.get_mc_fruit_active())
+    # print(fruit.get_mc_fruit_median_age())
+    # print(fruit.get_acct_bal_gt_mean())
+    pprint(fruit.create_summary())
 
     result = doctest.testmod()
     if result.failed == 0:
