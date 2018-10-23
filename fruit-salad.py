@@ -81,7 +81,7 @@ class FruitSalad:
                 sub.update({ \
                     'full_name': str(d['name']['first'] + " " + d['name']['last']), \
                     'post_count': len(d['posts']), \
-                    'most_common_word_in_posts': self.find_most_common_word(flatten), \
+                    'most_common_word_in_posts': self.get_most_common_word(flatten), \
                     'age': d['age'], \
                     'is_active': d['isActive'], \
                     'favorite_fruit': str(d['favoriteFruit']), \
@@ -93,7 +93,7 @@ class FruitSalad:
         return self.transformed
 
 
-    def find_most_common_word(self, lst):
+    def get_most_common_word(self, lst):
         """ Takes in list of words and returns the most common word(s) in a list.
             
             Test:
@@ -214,6 +214,19 @@ class FruitSalad:
         return float(format(statistics.mean(strawberry), '.2f'))
 
 
+    def get_min_age(self):
+
+        data = self.transform_data()
+
+        age = []
+
+        for user in data:
+            age.append(user['age'])
+
+        return min(age)
+
+
+
 # transform data:
 #  {'age': 20,
 #   'balance': 3317.36,
@@ -243,6 +256,7 @@ if __name__ == "__main__":
     print(fruit.get_mean_bal())
     print(fruit.get_active_mean())
     print(fruit.get_strawberry_mean())
+    print(fruit.get_min_age())
 
 
     result = doctest.testmod()
