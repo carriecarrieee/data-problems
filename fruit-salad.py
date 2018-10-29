@@ -22,8 +22,8 @@ class FruitSalad:
             object in the original file.
         """
 
-        url = "https://s3-us-west-1.amazonaws.com/circleup-engr-interview-public/simple-etl.jsonl"
-        #url = "data/simple-etl.jsonl"
+        # url = "https://s3-us-west-1.amazonaws.com/circleup-engr-interview-public/simple-etl.jsonl"
+        url = "data/simple-etl.jsonl"
         fields = ['name', 'age', 'isActive', 'favoriteFruit', 'balance', 'posts']
 
         # If data is not already downloaded, then run below block to download
@@ -432,12 +432,26 @@ class FruitSalad:
         return summary
 
 
+    def username_starts_with_J(self):
+
+        data = self.transform_data()
+
+        users_with_J = []
+
+        for user in data:
+            if user['full_name'][0] == 'J':
+                users_with_J.append(user) 
+
+        return users_with_J
+
+
 if __name__ == "__main__":
     
     import doctest
 
     fruit = FruitSalad()
-    pprint(fruit.transform_data())
+    # pprint(fruit.transform_data())
+    # pprint(fruit.username_starts_with_J())
     # print(fruit.get_total_posts())
     # print(fruit.get_mc_overall_word())
     # print(fruit.get_total_bal())
