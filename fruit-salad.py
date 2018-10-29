@@ -22,8 +22,8 @@ class FruitSalad:
             object in the original file.
         """
 
-        # url = "https://s3-us-west-1.amazonaws.com/circleup-engr-interview-public/simple-etl.jsonl"
-        url = "data/simple-etl.jsonl"
+        url = "https://s3-us-west-1.amazonaws.com/circleup-engr-interview-public/simple-etl.jsonl"
+        #url = "data/simple-etl.jsonl"
         fields = ['name', 'age', 'isActive', 'favoriteFruit', 'balance', 'posts']
 
         # If data is not already downloaded, then run below block to download
@@ -107,7 +107,7 @@ class FruitSalad:
         # Create dictionary-like Counter of {word: frequency}
         counter = Counter(lst)
 
-        # Find highest frequency out of all the frequencies.
+        # Find highest frequency out of all the frequencies
         max_count = max(counter.values())
 
         # Store the most common word in a list where the value (freq) matches
