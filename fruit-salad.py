@@ -1,6 +1,7 @@
 """Fruit Salad Data Transformation"""
 
 
+import requests
 import jsonlines
 import re
 import statistics
@@ -16,14 +17,15 @@ class FruitSalad:
         self.data = []
         self.transformed = []
 
+
     def get_data(self):
         """ Extracts data from JSON Lines file and returns a list of objects, 
             where each object is a transformed version of the corresponding 
             object in the original file.
         """
 
-        # url = "https://s3-us-west-1.amazonaws.com/circleup-engr-interview-public/simple-etl.jsonl"
-        url = "data/simple-etl.jsonl"
+        url = "https://s3-us-west-1.amazonaws.com/circleup-engr-interview-public/simple-etl.jsonl"
+        # url = "data/simple-etl.jsonl"
         fields = ['name', 'age', 'isActive', 'favoriteFruit', 'balance', 'posts']
 
         # If data is not already downloaded, then run below block to download
@@ -32,14 +34,24 @@ class FruitSalad:
         if not self.data:
 
             try:
-                with jsonlines.open(url, mode="r") as reader:
-                    d = reader.iter(type=dict, allow_none=True)
+                r = requests.get(url)
 
-                    # Loop through dict to get only selected fields for a new 
-                    # sub dict
-                    for obj in d:
-                        self.data.append({key: obj[key] for key in fields \
-                            if key in obj})
+                assert(r.status_code == 200), "Response to data request \
+                    failed."
+
+                # Response object returns a giant string; split it on \n because
+                # jsonlines is a list of json objects delimited by \n
+                json_obj = r.text.split('\n')
+
+                d = jsonlines.Reader(json_obj).iter(type=dict, 
+                                                    allow_none=True, 
+                                                    skip_invalid=True)
+
+                # Loop through dict to get only selected fields for a new 
+                # sub dict
+                for obj in d:
+                    self.data.append({key: obj[key] for key in fields \
+                        if key in obj})
 
             except:
                 print("Error: No data found!")
@@ -80,12 +92,12 @@ class FruitSalad:
                 # Update dictionary with multiple entries at a time
                 sub = {}
                 sub.update({ \
-                    'full_name': str(d['name']['first'] + " " + d['name']['last']), \
-                    'post_count': len(d['posts']), \
-                    'most_common_word_in_posts': self.get_most_common_word(flatten), \
-                    'age': d['age'], \
-                    'is_active': d['isActive'], \
-                    'favorite_fruit': str(d['favoriteFruit']), \
+                    'full_name': str(d['name']['first'] + " " + d['name']['last']),
+                    'post_count': len(d['posts']),
+                    'most_common_word_in_posts': self.get_most_common_word(flatten),
+                    'age': d['age'],
+                    'is_active': d['isActive'],
+                    'favorite_fruit': str(d['favoriteFruit']),
                     'balance': float(d['balance'].strip('$').replace(',', ''))
                 })
 
@@ -450,8 +462,9 @@ if __name__ == "__main__":
     import doctest
 
     fruit = FruitSalad()
+    # pprint(fruit.get_data())
     # pprint(fruit.transform_data())
-    # pprint(fruit.username_starts_with_J())
+    pprint(fruit.username_starts_with_J())
     # print(fruit.get_total_posts())
     # print(fruit.get_mc_overall_word())
     # print(fruit.get_total_bal())
@@ -466,7 +479,7 @@ if __name__ == "__main__":
     # print(fruit.get_acct_bal_gt_mean())
     pprint(fruit.create_summary())
 
-    result = doctest.testmod()
-    if result.failed == 0:
-        print("\nALL TESTS PASSED\n")
+    # result = doctest.testmod()
+    # if result.failed == 0:
+    #     print("\nALL TESTS PASSED\n")
 
