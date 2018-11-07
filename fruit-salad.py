@@ -90,16 +90,15 @@ class FruitSalad:
                 flatten = [leaf for tree in post_lst for leaf in tree]
 
                 # Update dictionary with multiple entries at a time
-                sub = {}
-                sub.update({ \
-                    'full_name': str(d['name']['first'] + " " + d['name']['last'])
-                    'post_count': len(d['posts'])
-                    'most_common_word_in_posts': self.get_most_common_word(flatten)
-                    'age': d['age']
-                    'is_active': d['isActive']
-                    'favorite_fruit': str(d['favoriteFruit'])
+                sub = {
+                    'full_name': str(d['name']['first'] + " " + d['name']['last']),
+                    'post_count': len(d['posts']),
+                    'most_common_word_in_posts': self.get_most_common_word(flatten),
+                    'age': d['age'],
+                    'is_active': d['isActive'],
+                    'favorite_fruit': str(d['favoriteFruit']),
                     'balance': float(d['balance'].strip('$').replace(',', ''))
-                })
+                }
 
                 self.transformed.append(sub)
 
