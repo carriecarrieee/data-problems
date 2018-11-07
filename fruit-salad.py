@@ -19,9 +19,7 @@ class FruitSalad:
 
 
     def get_data(self):
-        """ Extracts data from JSON Lines file and returns a list of objects, 
-            where each object is a transformed version of the corresponding 
-            object in the original file.
+        """ Extracts data from JSON Lines file and returns a list of objects.
         """
 
         url = "https://s3-us-west-1.amazonaws.com/circleup-engr-interview-public/simple-etl.jsonl"
@@ -60,7 +58,9 @@ class FruitSalad:
 
 
     def transform_data(self):
-        """ Makes a sub-dictionary from original data and adds it to a list.
+        """ Makes a sub-dictionary from original data, where each object will be
+            a transformed version of the corresponding object in the original 
+            file, and adds it to a list.
 
             Test:
 
@@ -92,12 +92,12 @@ class FruitSalad:
                 # Update dictionary with multiple entries at a time
                 sub = {}
                 sub.update({ \
-                    'full_name': str(d['name']['first'] + " " + d['name']['last']),
-                    'post_count': len(d['posts']),
-                    'most_common_word_in_posts': self.get_most_common_word(flatten),
-                    'age': d['age'],
-                    'is_active': d['isActive'],
-                    'favorite_fruit': str(d['favoriteFruit']),
+                    'full_name': str(d['name']['first'] + " " + d['name']['last'])
+                    'post_count': len(d['posts'])
+                    'most_common_word_in_posts': self.get_most_common_word(flatten)
+                    'age': d['age']
+                    'is_active': d['isActive']
+                    'favorite_fruit': str(d['favoriteFruit'])
                     'balance': float(d['balance'].strip('$').replace(',', ''))
                 })
 
@@ -417,17 +417,18 @@ class FruitSalad:
         return summary
 
 
-    def username_starts_with_J(self, data):
-        """ Returns items where the user's name begins with 'J'.
+    def username_starts_with(self, data, char):
+        """ Returns items where the user's name begins with the given character
+            as a pass parameter.
         """
 
-        users_with_J = []
+        users_with_char = []
 
         for user in data:
-            if user['full_name'][0] == 'J':
-                users_with_J.append(user) 
+            if user['full_name'][0] == char.upper():
+                users_with_char.append(user) 
 
-        return users_with_J
+        return users_with_char
 
 
 if __name__ == "__main__":
@@ -437,7 +438,7 @@ if __name__ == "__main__":
     fruit = FruitSalad()
     # pprint(fruit.get_data())
     data = fruit.transform_data()
-    pprint(fruit.username_starts_with_J(data))
+    pprint(fruit.username_starts_with(data, 'j'))
     # print(fruit.get_total_posts(data))
     # print(fruit.get_mc_overall_word())
     # print(fruit.get_total_bal(data))
