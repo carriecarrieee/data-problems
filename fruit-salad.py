@@ -5,7 +5,7 @@ import requests
 import jsonlines
 import re
 import statistics
-from collections import Counter
+from collections import Counter, namedtuple
 from pprint import pprint
 
 
@@ -22,7 +22,7 @@ class FruitSalad:
         """ Extracts data from JSON Lines file and returns a list of objects.
         """
 
-        url = "https://s3-us-west-1.amazonaws.com/circleup-engr-interview-public/simple-etl.jsonl"
+        url = "shttps://s3-us-west-1.amazonaws.com/circleup-engr-interview-public/simple-etl.jsonl"
         # url = "data/simple-etl.jsonl"
         fields = ['name', 'age', 'isActive', 'favoriteFruit', 'balance', 'posts']
 
@@ -34,8 +34,7 @@ class FruitSalad:
             try:
                 r = requests.get(url)
 
-                assert(r.status_code == 200), "Response to data request \
-                    failed."
+                assert(r.status_code == 200), "Data request failed."
 
                 # Response object returns a giant string; split it on \n because
                 # jsonlines is a list of json objects delimited by \n
@@ -52,7 +51,7 @@ class FruitSalad:
                         if key in obj})
 
             except:
-                print("Error: No data found!")
+                raise Exception("Error: No data found!")
 
         return self.data
 
@@ -105,12 +104,12 @@ class FruitSalad:
         return self.transformed
 
 
-    def get_most_common_word(self, lst):
+    @staticmethod
+    def get_most_common_word(lst):
         """ Takes in list of words and returns the most common word(s) in a list.
             
             Test:
-            >>> fruit = FruitSalad()
-            >>> fruit.get_most_common_word( \
+            >>> FruitSalad.get_most_common_word( \
                     [ 'me', 'me', 'me', 'i', 'will', 'succeed', 'succeed'])
             ['me']
         """
@@ -184,7 +183,7 @@ class FruitSalad:
 
         # Convert float to string of 2 decimal places, then convert back to a
         # float.
-        return float(format(total, '.2f'))
+        return round(total, 2)
 
 
     def get_mean_bal(self, data):
@@ -202,7 +201,7 @@ class FruitSalad:
         for user in data:
             bal_lst.append(user['balance'])
 
-        return float(format(statistics.mean(bal_lst), '.2f'))
+        return round(statistics.mean(bal_lst), 2)
 
 
     def get_active_mean_bal(self, data):
@@ -221,7 +220,7 @@ class FruitSalad:
             if user['is_active']:
                 active_bal.append(user['balance'])
 
-        return float(format(statistics.mean(active_bal), '.2f'))
+        return round(statistics.mean(active_bal), 2)
 
 
     def get_strawberry_mean(self, data):
@@ -240,7 +239,7 @@ class FruitSalad:
             if user['favorite_fruit'] == 'strawberry':
                 strawberry.append(user['balance'])
 
-        return float(format(statistics.mean(strawberry), '.2f'))
+        return round(statistics.mean(strawberry), 2)
 
 
     def get_min_max_mean_median(self, data):
@@ -249,26 +248,40 @@ class FruitSalad:
             Test:
 
             >>> fruit = FruitSalad()
-            >>> fruit.get_min_max_mean_median(fruit.transform_data())[0]
+            >>> fruit.get_min_max_mean_median(fruit.transform_data()).min
             20
 
-            >>> fruit.get_min_max_mean_median(fruit.transform_data())[1]
+            >>> fruit.get_min_max_mean_median(fruit.transform_data()).max
             40
 
-            >>> fruit.get_min_max_mean_median(fruit.transform_data())[2]
+            >>> fruit.get_min_max_mean_median(fruit.transform_data()).mean
             30.2
 
-            >>> fruit.get_min_max_mean_median(fruit.transform_data())[3]
+            >>> fruit.get_min_max_mean_median(fruit.transform_data()).median
             31.0
 
         """
 
-        age = []
+        lst = []
 
         for user in data:
-            age.append(user['age'])
+            lst.append(user['age'])
 
-        return [min(age), max(age), statistics.mean(age), statistics.median(age)]
+        # Namedtuples are immutable like regular tuples, but each obj stored in
+        # them can be accessed through a unique identifier, eliminating the need
+        # to remember integer indices.
+        # Second param of namedtuple is a string of fields where the function
+        # calls split() on the field names string--same as passing a list of 
+        # field names.
+        stat = namedtuple('stat', 'min max mean median')
+        age = stat(
+            min=min(lst), 
+            max=max(lst), 
+            mean=statistics.mean(lst),
+            median=statistics.median(lst)
+        )
+
+        return age
 
 
     def get_apple_lovers_age(self, data):
@@ -296,10 +309,10 @@ class FruitSalad:
             Test:
 
             >>> fruit = FruitSalad()
-            >>> fruit.get_non_apple_age(fruit.transform_data())[0]
+            >>> fruit.get_non_apple_age(fruit.transform_data()).min
             20
 
-            >>> fruit.get_non_apple_age(fruit.transform_data())[1]
+            >>> fruit.get_non_apple_age(fruit.transform_data()).max
             38
         """
 
@@ -309,7 +322,13 @@ class FruitSalad:
             if user['favorite_fruit'] != 'apple':
                 non_apple.append(user['age'])
 
-        return [min(non_apple), max(non_apple)]
+        stat = namedtuple('stat', 'min max')
+        age_non_apple = stat(
+            min=min(non_apple), 
+            max=max(non_apple)
+        )
+
+        return age_non_apple
 
 
     def get_mc_fruit_active(self, data):
@@ -346,7 +365,7 @@ class FruitSalad:
         fruit_median_age = []
 
         for user in data:
-            if user['age'] == self.get_min_max_mean_median(data)[3]:
+            if user['age'] == self.get_min_max_mean_median(data).median:
                 fruit_median_age.append(user['favorite_fruit'])
 
         return self.get_most_common_word(fruit_median_age)
@@ -398,13 +417,13 @@ class FruitSalad:
                 'strawberry_lovers_mean': self.get_strawberry_mean(data),
                 },
             'age': {
-                'min': self.get_min_max_mean_median(data)[0],
-                'max': self.get_min_max_mean_median(data)[1],
-                'mean': self.get_min_max_mean_median(data)[2],
-                'median': self.get_min_max_mean_median(data)[3],
+                'min': self.get_min_max_mean_median(data).min,
+                'max': self.get_min_max_mean_median(data).max,
+                'mean': self.get_min_max_mean_median(data).mean,
+                'median': self.get_min_max_mean_median(data).median,
                 'age_with_most_apple_lovers': self.get_apple_lovers_age(data),
-                'youngest_age_hating_apples': self.get_non_apple_age(data)[0],
-                'oldest_age_hating_apples': self.get_non_apple_age(data)[1],
+                'youngest_age_hating_apples': self.get_non_apple_age(data).min,
+                'oldest_age_hating_apples': self.get_non_apple_age(data).max,
                 },
             'favorite_fruit': {
                 'active_users': self.get_mc_fruit_active(data),
@@ -416,7 +435,8 @@ class FruitSalad:
         return summary
 
 
-    def username_starts_with(self, data, char):
+    @staticmethod
+    def username_starts_with(data, char):
         """ Returns items where the user's name begins with the given character
             as a pass parameter.
         """
@@ -437,9 +457,9 @@ if __name__ == "__main__":
     fruit = FruitSalad()
     # pprint(fruit.get_data())
     data = fruit.transform_data()
-    pprint(fruit.username_starts_with(data, 'j'))
+    pprint(FruitSalad.username_starts_with(data, 'j'))
     # print(fruit.get_total_posts(data))
-    # print(fruit.get_mc_overall_word())
+    # print(fruit.get_mc_overall_word(data))
     # print(fruit.get_total_bal(data))
     # print(fruit.get_mean_bal(data))
     # print(fruit.get_active_mean_bal(data))
