@@ -22,7 +22,7 @@ class FruitSalad:
         """ Extracts data from JSON Lines file and returns a list of objects.
         """
 
-        url = "shttps://s3-us-west-1.amazonaws.com/circleup-engr-interview-public/simple-etl.jsonl"
+        url = "https://s3-us-west-1.amazonaws.com/circleup-engr-interview-public/simple-etl.jsonl"
         # url = "data/simple-etl.jsonl"
         fields = ['name', 'age', 'isActive', 'favoriteFruit', 'balance', 'posts']
 
@@ -50,8 +50,8 @@ class FruitSalad:
                     self.data.append({key: obj[key] for key in fields \
                         if key in obj})
 
-            except:
-                raise Exception("Error: No data found!")
+            except Exception as ex:
+                raise Exception("Error loading data from " + url) from ex
 
         return self.data
 
